@@ -1,0 +1,246 @@
+﻿@page
+@model Area42_Accommodation.Pages.ReservationModel
+@{
+    ViewData["Title"] = "Reservation";
+}
+
+@section Styles {
+    <style>
+        .reservation-form {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .form-section:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .booking-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .total-price {
+            font-size: 2rem;
+            color: #ffba5a;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .confirm-btn {
+            background: #ffba5a;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+            .confirm-btn:hover {
+                background: #e6a64d;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 186, 90, 0.4);
+            }
+
+        .form-control:focus {
+            border-color: #ffba5a;
+            box-shadow: 0 0 0 0.2rem rgba(255, 186, 90, 0.25);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+            .summary-item strong {
+                color: #000;
+            }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="site-hero inner-page overlay" style="background-image: url(/images/hero_image.jpg)" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="row site-hero-inner justify-content-center align-items-center">
+            <div class="col-md-10 text-center" data-aos="fade">
+                <h1 class="heading mb-3">Reservering</h1>
+                <ul class="custom-breadcrumbs mb-4">
+                    <li><a asp-page="/Index">Home</a></li>
+                    <li>&bullet;</li>
+                    <li>Reservering</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reservation Form Section -->
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                @if (TempData["Message"] != null)
+                {
+                    <div class="alert alert-info" role="alert">
+                        @TempData["Message"]
+                    </div>
+                }
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success" role="alert">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="reservation-form">
+                    <form method="post">
+
+                        <!-- Booking Summary -->
+                        <div class="form-section">
+                            <h3 class="section-title">Boeking Overzicht</h3>
+                            <div class="booking-summary">
+                                <div class="summary-item">
+                                    <span>Accommodatie:</span>
+                                    <strong>@Model.BookingSummary.AccommodationType - @Model.BookingSummary.RoomType</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Check-in:</span>
+                                    <strong>@DateTime.Parse(Model.BookingSummary.CheckInDate).ToString("dd/MM/yyyy")</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Check-out:</span>
+                                    <strong>@DateTime.Parse(Model.BookingSummary.CheckOutDate).ToString("dd/MM/yyyy")</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Aantal nachten:</span>
+                                    <strong>@Model.BookingSummary.NumberOfNights</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Gasten:</span>
+                                    <strong>@Model.BookingSummary.TotalGuests personen</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Prijs per nacht:</span>
+                                    <strong>€@Model.BookingSummary.PricePerNight.ToString("F2")</strong>
+                                </div>
+                            </div>
+                            <div class="total-price">
+                                Totaal: €@Model.BookingSummary.TotalAmount.ToString("F2")
+                            </div>
+                        </div>
+
+                        <!-- Guest Information -->
+                        <div class="form-section">
+                            <h3 class="section-title">Persoonlijke Gegevens</h3>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label font-weight-bold">Voornaam *</label>
+                                    <input type="text" class="form-control" id="firstName" asp-for="Guest.FirstName" required>
+                                    <span asp-validation-for="Guest.FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label font-weight-bold">Achternaam *</label>
+                                    <input type="text" class="form-control" id="lastName" asp-for="Guest.LastName" required>
+                                    <span asp-validation-for="Guest.LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="dateOfBirth" class="form-label font-weight-bold">Geboortedatum *</label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="dateOfBirth"
+                                           asp-for="Guest.DateOfBirth"
+                                           max="@DateTime.Today.AddYears(-18).ToString("yyyy-MM-dd")"
+                                           required>
+                                    <small class="form-text text-muted">Je moet minimaal 18 jaar oud zijn om te boeken.</small>
+                                    <span asp-validation-for="Guest.DateOfBirth" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label font-weight-bold">Email *</label>
+                                    <input type="email" class="form-control" id="email" asp-for="Guest.Email" required>
+                                    <span asp-validation-for="Guest.Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields for booking data -->
+                        <input type="hidden" asp-for="BookingSummary.AccommodationType" />
+                        <input type="hidden" asp-for="BookingSummary.RoomType" />
+                        <input type="hidden" asp-for="BookingSummary.CheckInDate" />
+                        <input type="hidden" asp-for="BookingSummary.CheckOutDate" />
+                        <input type="hidden" asp-for="BookingSummary.PricePerNight" />
+                        <input type="hidden" asp-for="BookingSummary.NumberOfNights" />
+                        <input type="hidden" asp-for="BookingSummary.TotalAmount" />
+                        <input type="hidden" asp-for="BookingSummary.TotalGuests" />
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn confirm-btn">Bevestig Boeking</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // No dynamic form interactions needed - this is just a summary page
+        console.log('Reservation summary page loaded');
+    </script>
+}

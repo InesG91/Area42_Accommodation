@@ -1,0 +1,245 @@
+﻿@page
+@model Area42_Accommodation.Pages.HotelModel
+@{
+    ViewData["Title"] = "Hotel";
+}
+
+@section Styles {
+    <style>
+        .accommodation-section {
+            padding: 60px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .accommodation-section:last-child {
+            border-bottom: none;
+        }
+        
+        .accommodation-header {
+            margin-bottom: 40px;
+        }
+        
+        .accommodation-header h2 {
+            font-size: 2.5rem;
+            color: #000;
+            margin-bottom: 10px;
+        }
+        
+        .price-info {
+            font-size: 1.5rem;
+            color: #ffba5a;
+            font-weight: bold;
+        }
+        
+        .guest-info {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .accommodation-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .reserve-btn {
+            background: #ffba5a;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .reserve-btn:hover {
+            background: #e6a64d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 186, 90, 0.4);
+        }
+        
+        .image-carousel {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+}
+
+<!-- Hero Section with Datepicker -->
+<section class="site-hero inner-page overlay" style="background-image: url(/images/hero_image.jpg)" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="row site-hero-inner justify-content-center align-items-center">
+            <div class="col-md-10 text-center" data-aos="fade">
+                <h1 class="heading mb-3">Hotel Rooms</h1>
+                <ul class="custom-breadcrumbs mb-4">
+                    <li><a asp-page="/Index">Home</a></li>
+                    <li>&bullet;</li>
+                    <li>Hotel</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Form Section -->
+<section class="section pb-0">
+    <div class="container">
+        <div class="row check-availabilty">
+            <div class="block-32" data-aos="fade-up" data-aos-offset="-200">
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-lg-0 col-lg-3">
+                            <label for="checkin_date" class="font-weight-bold text-black">Check In</label>
+                            <div class="field-icon-wrap">
+                                <div class="icon"><span class="icon-calendar"></span></div>
+                                <input type="date" id="checkin_date" name="CheckInDate" class="form-control" asp-for="Booking.CheckInDate">
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3 mb-lg-0 col-lg-3">
+                            <label for="checkout_date" class="font-weight-bold text-black">Check Out</label>
+                            <div class="field-icon-wrap">
+                                <div class="icon"><span class="icon-calendar"></span></div>
+                                <input type="date" id="checkout_date" name="CheckOutDate" class="form-control" asp-for="Booking.CheckOutDate">
+                            </div>
+                        </div>
+                        <!-- ✅ Clean single guests dropdown -->
+                        <div class="col-md-6 mb-3 mb-md-0 col-lg-3">
+                            <label for="guests" class="font-weight-bold text-black">Guests</label>
+                            <div class="field-icon-wrap">
+                                <div class="icon"><span class="ion-ios-arrow-down"></span></div>
+                                <select name="Guests" id="guests" class="form-control" asp-for="Booking.Guests">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 align-self-end">
+                            <button type="submit" class="btn btn-primary btn-block text-white">Check Availability</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Small Chalet Section -->
+<section class="accommodation-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="accommodation-header">
+                    <h2>Small Chalet</h2>
+                    <div class="price-info">€150 / per night</div>
+                    <div class="guest-info">Perfect for up to 4 guests</div>
+                </div>
+                <p class="accommodation-description">
+                    Experience cozy comfort in our Small Chalet, perfect for couples or small families. This charming accommodation features modern amenities while maintaining a rustic alpine atmosphere. Enjoy stunning mountain views and easy access to hiking trails.
+                </p>
+                <a asp-page="/Reservation"
+                   asp-route-accommodationType="Chalet"
+                   asp-route-roomType="Small"
+                   class="btn reserve-btn">Reserveer nu!</a>
+            </div>
+            <div class="col-lg-6">
+                <div class="image-carousel">
+                    <div class="home-slider major-caousel owl-carousel">
+                        <div class="slider-item">
+                            <img src="~/images/img_1.jpg" alt="Small Chalet" class="img-fluid">
+                        </div>
+                        <div class="slider-item">
+                            <img src="~/images/img_2.jpg" alt="Small Chalet Interior" class="img-fluid">
+                        </div>
+                        <div class="slider-item">
+                            <img src="~/images/img_3.jpg" alt="Small Chalet View" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Medium Chalet Section -->
+<section class="accommodation-section bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                <div class="accommodation-header">
+                    <h2>Medium Chalet</h2>
+                    <div class="price-info">€250 / per night</div>
+                    <div class="guest-info">Perfect for up to 6 guests</div>
+                </div>
+                <p class="accommodation-description">
+                    Our Medium Chalet offers spacious comfort for families and groups. With additional bedrooms and a larger living area, you'll have plenty of space to relax. Features include a fully equipped kitchen, fireplace, and private balcony with mountain views.
+                </p>
+                <a asp-page="/Reservation"
+                   asp-route-accommodationType="Chalet"
+                   asp-route-roomType="Medium"
+                   class="btn reserve-btn">Reserveer nu!</a>
+            </div>
+            <div class="col-lg-6 order-lg-1">
+                <div class="image-carousel">
+                    <div class="home-slider major-caousel owl-carousel">
+                        <div class="slider-item">
+                            <img src="~/images/img_2.jpg" alt="Medium Chalet" class="img-fluid">
+                        </div>
+                        <div class="slider-item">
+                            <img src="~/images/img_3.jpg" alt="Medium Chalet Interior" class="img-fluid">
+                        </div>
+                        <div class="slider-item">
+                            <img src="~/images/img_1.jpg" alt="Medium Chalet View" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- XL Chalet Section -->
+<section class="accommodation-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="accommodation-header">
+                    <h2>XL Chalet</h2>
+                    <div class="price-info">€350 / per night</div>
+                    <div class="guest-info">Perfect for up to 8 guests</div>
+                </div>
+                <p class="accommodation-description">
+                    Indulge in luxury with our XL Chalet, designed for large groups and special occasions. This premium accommodation features multiple bedrooms, spacious living areas, a hot tub, and panoramic mountain views. Perfect for unforgettable family gatherings or group retreats.
+                </p>
+                <a asp-page="/Reservation"
+                   asp-route-accommodationType="Chalet"
+                   asp-route-roomType="XL"
+                   class="btn reserve-btn">Reserveer nu!</a>
+            </div>
+            <div class="col-lg-6">
+                <div class="image-carousel">
+                    <div class="home-slider major-caousel owl-carousel">
+                        <div class="slider-item">
+                            <img src="~/images/img_3.jpg" alt="XL Chalet" class="img-fluid">
+                        </div>
+                        <div class="slider-item">
+                            <img src="~/images/img_1.jpg" alt="XL Chalet Interior" class="img-fluid">
+                        </div>
+                        <div class="slider-item">
+                            <img src="~/images/img_2.jpg" alt="XL Chalet View" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
