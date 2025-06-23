@@ -16,8 +16,8 @@ namespace Infrastructure.DataAccess.Repositories
 {
     public class AccommodationRepository : IAccommodationRepository
     {
-        // Replace this with your actual connection string
-        private const string _connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=***********;TrustServerCertificate=True";
+        
+        private const string _connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=5Kty4gkkBYNyyYnkXAr6;TrustServerCertificate=True";
 
         public AccommodationRepository()
         {
@@ -27,6 +27,7 @@ namespace Infrastructure.DataAccess.Repositories
         {
             System.Console.WriteLine($"DEBUG: Connection string: {_connectionString}");
 
+            // Maakt lege lijst van AccommodationDTO objecten
             var accommodationDTOs = new List<AccommodationDTO>();
             using SqlConnection connection = new(_connectionString);
 
@@ -34,13 +35,16 @@ namespace Infrastructure.DataAccess.Repositories
             connection.Open();
             System.Console.WriteLine("DEBUG: Connection opened successfully!");
 
+            // Maakt Command object met specifieke velden uit het tabel
             using SqlCommand command = connection.CreateCommand();
             command.CommandText = "SELECT AccommodationID, PricePerNight, Subtype, MaxGuests " +
                 "FROM Accommodation ORDER BY Subtype";
 
+            // Een reader om de command object rows uit te lezen
             System.Console.WriteLine("DEBUG: About to execute query...");
             using SqlDataReader reader = command.ExecuteReader();
 
+            // Elke rij wordt gematcht met een attribuut in de DTO-object en een object wordt aangemaakt
             while (reader.Read())
             {
                 accommodationDTOs.Add(new AccommodationDTO
@@ -54,7 +58,7 @@ namespace Infrastructure.DataAccess.Repositories
 
             System.Console.WriteLine($"DEBUG: Found {accommodationDTOs.Count} accommodations");
 
-            // Map DTOs to domain models
+            // Maakt van de DTO-object een domain-model object van de klasse Accommodation
             return accommodationDTOs.Select(dto => dto.Map()).ToList();
         }
         
@@ -115,5 +119,36 @@ namespace Infrastructure.DataAccess.Repositories
             // Map DTOs to domain models
             return accommodationDTOs.Select(dto => dto.Map()).ToList();
         }
+
+        public bool IsAvailable(int accommodationId, DateTime startDate, DateTime endDate)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                // Check if there are any unavailable dates in the requested range
+                string sql = @"
+            SELECT COUNT(*) 
+            FROM Availability 
+            WHERE AccommodationID = @AccommodationId 
+            AND StartDate >= @StartDate 
+            AND StartDate < @EndDate 
+            AND IsAvailable = 0";
+
+                using (var command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@AccommodationId", accommodationId);
+                    command.Parameters.AddWithValue("@StartDate", startDate);
+                    command.Parameters.AddWithValue("@EndDate", endDate);
+
+                    int unavailableDays = (int)command.ExecuteScalar();
+
+                    // If no unavailable days found, it's available
+                    return unavailableDays == 0;
+                }
+            }
+        }
+
+
     }
 }

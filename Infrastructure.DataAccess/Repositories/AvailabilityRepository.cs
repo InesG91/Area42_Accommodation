@@ -9,44 +9,50 @@ using Infrastructure.DataAccess.Repositories;
 using Core.Domain.Services;
 using Microsoft.Data.SqlClient;
 using Core.Domain.Interfaces;
+using System.Data;
 
 namespace Infrastructure.DataAccess.Repositories
 {
     public class AvailabilityRepository: IAvailabilityRepository
     {
-        private const string connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=***********;TrustServerCertificate=True";
+        private const string connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=5Kty4gkkBYNyyYnkXAr6;TrustServerCertificate=True";
 
         // Get all accommodations that are fully available for the date range
         public List<int> GetAvailableAccommodations(DateTime startDate, DateTime endDate)
         {
+            // nieuwe lege lijst aanmaken
             var availableAccommodationIds = new List<int>();
+
             using SqlConnection connection = new(connectionString);
             connection.Open();
             using SqlCommand command = connection.CreateCommand();
 
-            int daysNeeded = (endDate - startDate).Days + 1;
+            // Gaat in SQL op zoek naar accommodaties waarbij de Availability = 0, om deze te excluden van de lijst met 
+            // resultaten. Uiteindelijk is er alleen een lijst met accommodaties + availability=1 in de datumperiode over.
+            command.CommandText = @"
+        SELECT DISTINCT a.AccommodationID
+        FROM Accommodation a
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM Availability av 
+            WHERE av.AccommodationID = a.AccommodationID
+            AND av.StartDate >= @StartDate 
+            AND av.StartDate < @EndDate
+            AND av.IsAvailable = 0
+        )";
 
-            // Debug: Print the parameters
-            Console.WriteLine($"StartDate: {startDate:yyyy-MM-dd}");
-            Console.WriteLine($"EndDate: {endDate:yyyy-MM-dd}");
-            Console.WriteLine($"DaysNeeded: {daysNeeded}");
+            command.Parameters.AddWithValue("@StartDate", startDate);
+            command.Parameters.AddWithValue("@EndDate", endDate);
 
-            // First, let's test a simpler query
-            command.CommandText = @"SELECT TOP 5 AccommodationID, StartDate, IsAvailable 
-                           FROM Availability 
-                           WHERE IsAvailable = 1";
-
+            // reader gaat door elke row heen en slaat de ID op in de lege lijst.
             using SqlDataReader reader = command.ExecuteReader();
-            Console.WriteLine("Raw data from Availability table:");
             while (reader.Read())
             {
-                Console.WriteLine($"AccommodationID: {reader.GetValue(0)} (Type: {reader.GetFieldType(0)})");
-                Console.WriteLine($"StartDate: {reader.GetValue(1)}");
-                Console.WriteLine($"IsAvailable: {reader.GetValue(2)}");
-                Console.WriteLine("---");
+                availableAccommodationIds.Add(reader.GetInt32("AccommodationID"));
             }
 
-            return availableAccommodationIds; // Return empty for now
+            // Opgevulde lijst wordt teruggegeven
+            return availableAccommodationIds;
         }
 
         public void MarkUnavailable(int accommodationId, DateTime startDate, DateTime endDate)

@@ -5,13 +5,16 @@ using Infrastructure.DataAccess.DTOs;
 using Core.Domain.Models;
 using Infrastructure.DataAccess.Mappers;
 using System.Data;
+using System.Diagnostics;
+using System.Net;
+using System;
 
 namespace Infrastructure.DataAccess.Repositories
 {
     public class BookingRepository : IBookingRepository
     {
         // ✅ Same connection string across all repositories
-        private const string _connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=***********;TrustServerCertificate=True";
+        private const string _connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=5Kty4gkkBYNyyYnkXAr6;TrustServerCertificate=True";
         private readonly IGuestRepository _guestRepository;
 
         // ✅ Proper dependency injection
@@ -28,34 +31,49 @@ namespace Infrastructure.DataAccess.Repositories
             using SqlConnection connection = new(_connectionString);
             connection.Open();
             using SqlTransaction transaction = connection.BeginTransaction();
+
             try
             {
+                Console.WriteLine("DEBUG: Starting booking creation...");
+
                 int guestId = EnsureGuestExists(connection, transaction, guestDto);
+                Console.WriteLine($"DEBUG: Guest ID obtained: {guestId}");
 
                 using SqlCommand command = connection.CreateCommand();
                 command.Transaction = transaction;
-                // ✅ Fixed: Include AccommodationID
                 command.CommandText = "INSERT INTO Bookings (GuestID, AccommodationID, StartDate, EndDate, BookingStatus, AmountOfPeople) " +
                     "OUTPUT INSERTED.BookingID " +
                     "VALUES (@GuestID, @AccommodationID, @StartDate, @EndDate, @BookingStatus, @AmountOfPeople)";
 
                 command.Parameters.AddWithValue("@GuestID", guestId);
-                command.Parameters.AddWithValue("@AccommodationID", booking.Accommodations.First()._accommodationID); // ✅ Add this
+                command.Parameters.AddWithValue("@AccommodationID", booking.Accommodations.First()._accommodationID);
                 command.Parameters.AddWithValue("@StartDate", bookingDto.StartDate);
                 command.Parameters.AddWithValue("@EndDate", bookingDto.EndDate);
                 command.Parameters.AddWithValue("@BookingStatus", bookingDto.BookingStatus);
                 command.Parameters.AddWithValue("@AmountOfPeople", bookingDto.TotalGuests);
 
-                int bookingId = (int)command.ExecuteScalar();
+                Console.WriteLine($"DEBUG: About to execute SQL with parameters:");
+                Console.WriteLine($"  - GuestID: {guestId}");
+                Console.WriteLine($"  - AccommodationID: {booking.Accommodations.First()._accommodationID}");
+                Console.WriteLine($"  - StartDate: {bookingDto.StartDate}");
+                Console.WriteLine($"  - EndDate: {bookingDto.EndDate}");
+                Console.WriteLine($"  - BookingStatus: {bookingDto.BookingStatus}");
+                Console.WriteLine($"  - AmountOfPeople: {bookingDto.TotalGuests}");
 
-                // ✅ Removed: StoreBookingAccommodations call (not needed since we store AccommodationID directly)
+                int bookingId = (int)command.ExecuteScalar();
+                Console.WriteLine($"DEBUG: BookingID returned from database: {bookingId}");
 
                 transaction.Commit();
+                Console.WriteLine($"DEBUG: Transaction committed successfully!");
+
                 return bookingId;
             }
-            catch
+            catch (Exception exception)
             {
+                Console.WriteLine($"DEBUG: ERROR occurred - {exception.Message}");
+                Console.WriteLine($"DEBUG: Full exception: {exception}");
                 transaction.Rollback();
+                Console.WriteLine($"DEBUG: Transaction rolled back");
                 throw;
             }
         }

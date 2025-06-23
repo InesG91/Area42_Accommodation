@@ -11,7 +11,7 @@ namespace Infrastructure.DataAccess.Repositories
 {
     public class GuestRepository : IGuestRepository
     {
-        private const string _connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=***********;TrustServerCertificate=True";
+        private const string _connectionString = "Data Source=mssqlstud.fhict.local;Initial Catalog=dbi557335_area42;User ID=dbi557335_area42;Password=5Kty4gkkBYNyyYnkXAr6;TrustServerCertificate=True";
 
         // ✅ Matches interface: int Save(Guest guest)
         public int Save(Guest guest)
