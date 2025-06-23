@@ -4,8 +4,6 @@
     ViewData["Title"] = "Home";
 }
 
-
-
 @section Scripts {
     <script>
         $(document).ready(function() {
@@ -56,6 +54,103 @@
         .check-availabilty {
             margin-top: -270px !important;
         }
+
+        /* Accommodation sections styling */
+        .accommodation-section {
+            padding: 60px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .accommodation-section:last-child {
+                border-bottom: none;
+            }
+
+        .section-divider {
+            background: #f8f9fa;
+            padding: 40px 0;
+            text-align: center;
+            border-top: 3px solid #ffba5a;
+            border-bottom: 3px solid #ffba5a;
+            margin-top: 40px;
+        }
+
+        /* Remove spacing after booking form to move everything up */
+        .section.pb-0 {
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-divider h2 {
+            font-size: 3rem;
+            color: #000;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .section-divider p {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin: 10px 0 0 0;
+        }
+
+        .accommodation-header {
+            margin-bottom: 40px;
+        }
+
+            .accommodation-header h2 {
+                font-size: 2.5rem;
+                color: #000;
+                margin-bottom: 10px;
+            }
+
+        .price-info {
+            font-size: 1.5rem;
+            color: #ffba5a;
+            font-weight: bold;
+        }
+
+        .guest-info {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .accommodation-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .reserve-btn {
+            background: #ffba5a;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+            .reserve-btn:hover {
+                background: #e6a64d;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 186, 90, 0.4);
+                color: white;
+                text-decoration: none;
+            }
+
+        .image-carousel {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .availability-status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 }
 
@@ -71,7 +166,6 @@
     </div>
 </section>
 <!-- END Hero section -->
-
 <!-- Booking Form Section -->
 <section class="section pb-0">
     <div class="container">
@@ -119,347 +213,336 @@
     </div>
 </section>
 <!-- END Booking Form section -->
-
-
-<!-- Accommodations Section -->
-<section class="section">
+<!-- Chalet Section Header -->
+<div class="section-divider">
     <div class="container">
-        <!-- General Header -->
-        <div class="row justify-content-center text-center mb-5">
-            <div class="col-md-7">
-                <h2 class="heading" data-aos="fade-up">Accommodaties</h2>
-                <p data-aos="fade-up" data-aos-delay="100">Ontdek onze unieke accommodaties in het hart van Area42. Van gezellige chalets tot comfortabele hotelkamers.</p>
-            </div>
-        </div>
-
-        <!-- Chalets Overview -->
-        <div class="row mb-5">
-            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-up">
-                <div class="accommodation-category">
-                    <h3 class="text-center mb-4">Chalets</h3>
-
-                    <!-- 3 Chalet Images with Individual Prices -->
-                    <div class="row">
-                        @if (Model.Accommodations != null && Model.Accommodations.Where(a => a._subtype.Contains("Chalet")).Any())
-                        {
-                            @foreach (var chalet in Model.Accommodations.Where(a => a._subtype.Contains("Chalet")).Take(3))
-                            {
-                                <div class="col-md-4 mb-3">
-                                    <figure class="img-wrap">
-                                        <img src="@GetImageUrl(chalet._subtype)"
-                                             alt="@chalet._subtype"
-                                             class="img-fluid rounded">
-                                        <div class="text-center mt-2">
-                                            <h6 class="accommodation-name">@chalet._subtype</h6>
-                                            <p class="individual-price">
-                                                <strong>€@chalet._pricePerNight</strong>
-                                                <small class="text-muted d-block">per nacht</small>
-                                            </p>
-                                        </div>
-                                    </figure>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <!-- Fallback if no chalets available -->
-                            <div class="col-12 text-center">
-                                <p class="text-muted">Geen chalets beschikbaar</p>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Price Range Summary -->
-                    <div class="text-center mt-3">
-                        @if (Model.Accommodations != null && Model.Accommodations.Where(a => a._subtype.Contains("Chalet")).Any())
-                        {
-                            var chaletPrices = Model.Accommodations.Where(a => a._subtype.Contains("Chalet")).ToList();
-                            var minPrice = chaletPrices.Min(c => c._pricePerNight);
-                            var maxPrice = chaletPrices.Max(c => c._pricePerNight);
-
-                            <p class="price-range-summary">
-                                <small>Prijsbereik: €@minPrice - €@maxPrice per nacht</small>
-                            </p>
-                        }
-                    </div>
-
-                    <!-- Single Button -->
-                    <div class="text-center">
-                        <a asp-page="/Chalet" class="btn btn-primary text-white px-5 py-3">Bekijk Alle Chalets</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hotels Overview -->
-            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="accommodation-category">
-                    <h3 class="text-center mb-4">Hotel</h3>
-
-                    <!-- 3 Hotel Images with Individual Prices -->
-                    <div class="row">
-                        @if (Model.Accommodations != null && Model.Accommodations.Where(a => a._subtype.Contains("Hotel")).Any())
-                        {
-                            @foreach (var hotel in Model.Accommodations.Where(a => a._subtype.Contains("Hotel")).Take(3))
-                            {
-                                <div class="col-md-4 mb-3">
-                                    <figure class="img-wrap">
-                                        <img src="@GetImageUrl(hotel._subtype)"
-                                             alt="@hotel._subtype"
-                                             class="img-fluid rounded">
-                                        <div class="text-center mt-2">
-                                            <h6 class="accommodation-name">@hotel._subtype</h6>
-                                            <p class="individual-price">
-                                                <strong>€@hotel._pricePerNight</strong>
-                                                <small class="text-muted d-block">per nacht</small>
-                                            </p>
-                                        </div>
-                                    </figure>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <!-- Fallback if no hotels available -->
-                            <div class="col-12 text-center">
-                                <p class="text-muted">Geen hotelkamers beschikbaar</p>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Price Range Summary -->
-                    <div class="text-center mt-3">
-                        @if (Model.Accommodations != null && Model.Accommodations.Where(a => a._subtype.Contains("Hotel")).Any())
-                        {
-                            var hotelPrices = Model.Accommodations.Where(a => a._subtype.Contains("Hotel")).ToList();
-                            var minPrice = hotelPrices.Min(h => h._pricePerNight);
-                            var maxPrice = hotelPrices.Max(h => h._pricePerNight);
-
-                            <p class="price-range-summary">
-                                <small>Prijsbereik: €@minPrice - €@maxPrice per nacht</small>
-                            </p>
-                        }
-                    </div>
-
-                    <!-- Single Button -->
-                    <div class="text-center">
-                        <a asp-page="/Hotel" class="btn btn-primary text-white px-5 py-3">Bekijk Alle Hotels</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h2>Luxury Chalets</h2>
+        <p>Experience mountain luxury in our premium chalets</p>
     </div>
-</section>
-<!-- END Accommodations section -->
+</div>
 
-<style>
-    .accommodation-category {
-        background: #f8f9fa;
-        padding: 30px;
-        border-radius: 10px;
-        height: 100%;
-    }
+@if (Model.HasCheckedAvailability && !Model.ShowSmallChalet && !Model.ShowMediumChalet && !Model.ShowXLChalet)
+{
+    <section class="section">
+        <div class="container text-center">
+            <div class="alert alert-warning">
+                <h4>No Available Chalets</h4>
+                <p>Sorry, no chalets are available for your selected dates and guest count.</p>
+            </div>
+        </div>
+    </section>
+}
 
-        .accommodation-category h3 {
-            color: #333;
-            font-weight: bold;
-        }
+<!-- Small Chalet Section -->
+@if (Model.ShowSmallChalet)
+{
+    <section class="accommodation-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="accommodation-header">
+                        <h2>Small Chalet</h2>
+                        <div class="price-info">€150 / per night</div>
+                        <div class="guest-info">Perfect for up to 4 guests</div>
+                        @if (Model.HasCheckedAvailability)
+                        {
+                            <div class="availability-status text-success">
+                                <i class="fa fa-check"></i> Available for your dates!
+                            </div>
+                        }
+                    </div>
+                    <p class="accommodation-description">
+                        Experience cozy comfort in our Small Chalet, perfect for couples or small families. This charming accommodation features modern amenities while maintaining a rustic alpine atmosphere. Enjoy stunning mountain views and easy access to hiking trails.
+                    </p>
+                    <a asp-page="/Reservation"
+                       asp-route-accommodationType="Chalet"
+                       asp-route-roomType="Small"
+                       asp-route-checkIn="@Model.Booking.CheckInDate"
+                       asp-route-checkOut="@Model.Booking.CheckOutDate"
+                       asp-route-totalGuests="@Model.Booking.Guests"
+                       class="btn reserve-btn">Reserveer nu!</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="image-carousel">
+                        <div class="home-slider major-caousel owl-carousel">
+                            <div class="slider-item">
+                                <img src="/images/small-chalet.jpg" alt="Small Chalet" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_2.jpg" alt="Small Chalet Interior" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_3.jpg" alt="Small Chalet View" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
 
-    .img-wrap img {
-        height: 150px;
-        object-fit: cover;
-        width: 100%;
-        transition: transform 0.3s ease;
-    }
+<!-- Medium Chalet Section -->
+@if (Model.ShowMediumChalet)
+{
+    <section class="accommodation-section bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                    <div class="accommodation-header">
+                        <h2>Medium Chalet</h2>
+                        <div class="price-info">€250 / per night</div>
+                        <div class="guest-info">Perfect for up to 6 guests</div>
+                        @if (Model.HasCheckedAvailability)
+                        {
+                            <div class="availability-status text-success">
+                                <i class="fa fa-check"></i> Available for your dates!
+                            </div>
+                        }
+                    </div>
+                    <p class="accommodation-description">
+                        Our Medium Chalet offers spacious comfort for families and groups. With additional bedrooms and a larger living area, you'll have plenty of space to relax. Features include a fully equipped kitchen, fireplace, and private balcony with mountain views.
+                    </p>
+                    <a asp-page="/Reservation"
+                       asp-route-accommodationType="Chalet"
+                       asp-route-roomType="Medium"
+                       asp-route-checkIn="@Model.Booking.CheckInDate"
+                       asp-route-checkOut="@Model.Booking.CheckOutDate"
+                       asp-route-totalGuests="@Model.Booking.Guests"
+                       class="btn reserve-btn">Reserveer nu!</a>
+                </div>
+                <div class="col-lg-6 order-lg-1">
+                    <div class="image-carousel">
+                        <div class="home-slider major-caousel owl-carousel">
+                            <div class="slider-item">
+                                <img src="/images/medium-chalet.jpg" alt="Medium Chalet" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="/images/img_3.jpg" alt="Medium Chalet Interior" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="/images/img_1.jpg" alt="Medium Chalet View" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
 
-    .img-wrap:hover img {
-        transform: scale(1.05);
-    }
+<!-- XL Chalet Section -->
+@if (Model.ShowXLChalet)
+{
+    <section class="accommodation-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="accommodation-header">
+                        <h2>XL Chalet</h2>
+                        <div class="price-info">€350 / per night</div>
+                        <div class="guest-info">Perfect for up to 8 guests</div>
+                        @if (Model.HasCheckedAvailability)
+                        {
+                            <div class="availability-status text-success">
+                                <i class="fa fa-check"></i> Available for your dates!
+                            </div>
+                        }
+                    </div>
+                    <p class="accommodation-description">
+                        Indulge in luxury with our XL Chalet, designed for large groups and special occasions. This premium accommodation features multiple bedrooms, spacious living areas, a hot tub, and panoramic mountain views. Perfect for unforgettable family gatherings or group retreats.
+                    </p>
+                    <a asp-page="/Reservation"
+                       asp-route-accommodationType="Chalet"
+                       asp-route-roomType="XL"
+                       asp-route-checkIn="@Model.Booking.CheckInDate"
+                       asp-route-checkOut="@Model.Booking.CheckOutDate"
+                       asp-route-totalGuests="@Model.Booking.Guests"
+                       class="btn reserve-btn">Reserveer nu!</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="image-carousel">
+                        <div class="home-slider major-caousel owl-carousel">
+                            <div class="slider-item">
+                                <img src="/images/xl-chalet.jpg" alt="XL Chalet" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_1.jpg" alt="XL Chalet Interior" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_2.jpg" alt="XL Chalet View" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
 
-    .accommodation-name {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 0.9rem;
-    }
+<!-- Hotel Section Header -->
+<div class="section-divider">
+    <div class="container">
+        <h2>Comfortable Hotel Rooms</h2>
+        <p>Relax in our well-appointed hotel accommodations</p>
+    </div>
+</div>
 
-    .individual-price {
-        margin-bottom: 0;
-    }
+@if (Model.HasCheckedAvailability && !Model.ShowSmallHotel && !Model.ShowMediumHotel && !Model.ShowXLHotel)
+{
+    <section class="section">
+        <div class="container text-center">
+            <div class="alert alert-warning">
+                <h4>No Available Hotel Rooms</h4>
+                <p>Sorry, no hotel rooms are available for your selected dates and guest count.</p>
+            </div>
+        </div>
+    </section>
+}
 
-        .individual-price strong {
-            color: #ffba5a;
-            font-size: 1.1rem;
-        }
+<!-- Small Hotel Room Section -->
+@if (Model.ShowSmallHotel)
+{
+    <section class="accommodation-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="accommodation-header">
+                        <h2>Small Hotel Room</h2>
+                        <div class="price-info">€100 / per night</div>
+                        <div class="guest-info">Perfect for up to 2 guests</div>
+                        @if (Model.HasCheckedAvailability)
+                        {
+                            <div class="availability-status text-success">
+                                <i class="fa fa-check"></i> Available for your dates!
+                            </div>
+                        }
+                    </div>
+                    <p class="accommodation-description">
+                        Our Small Hotel Room offers comfortable accommodation for solo travelers or couples. Featuring modern amenities, comfortable bedding, and convenient access to all park facilities. Perfect for a peaceful retreat after exciting days at Area42.
+                    </p>
+                    <a asp-page="/Reservation"
+                       asp-route-accommodationType="Hotel"
+                       asp-route-roomType="Small"
+                       asp-route-checkIn="@Model.Booking.CheckInDate"
+                       asp-route-checkOut="@Model.Booking.CheckOutDate"
+                       asp-route-totalGuests="@Model.Booking.Guests"
+                       class="btn reserve-btn">Reserveer nu!</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="image-carousel">
+                        <div class="home-slider major-caousel owl-carousel">
+                            <div class="slider-item">
+                                <img src="~/images/small-hotel.jpg" alt="Small Hotel Room" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_1.jpg" alt="Small Hotel Room Interior" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_2.jpg" alt="Small Hotel Room View" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
 
-    .price-range-summary {
-        color: #666;
-        font-style: italic;
-        margin-bottom: 20px;
-    }
+<!-- Medium Hotel Room Section -->
+@if (Model.ShowMediumHotel)
+{
+    <section class="accommodation-section bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                    <div class="accommodation-header">
+                        <h2>Medium Hotel Room</h2>
+                        <div class="price-info">€200 / per night</div>
+                        <div class="guest-info">Perfect for up to 4 guests</div>
+                        @if (Model.HasCheckedAvailability)
+                        {
+                            <div class="availability-status text-success">
+                                <i class="fa fa-check"></i> Available for your dates!
+                            </div>
+                        }
+                    </div>
+                    <p class="accommodation-description">
+                        Our Medium Hotel Room provides spacious comfort for small families or groups of friends. With additional space, separate seating area, and upgraded amenities. Enjoy the convenience of hotel service with the comfort of a home away from home.
+                    </p>
+                    <a asp-page="/Reservation"
+                       asp-route-accommodationType="Hotel"
+                       asp-route-roomType="Medium"
+                       asp-route-checkIn="@Model.Booking.CheckInDate"
+                       asp-route-checkOut="@Model.Booking.CheckOutDate"
+                       asp-route-totalGuests="@Model.Booking.Guests"
+                       class="btn reserve-btn">Reserveer nu!</a>
+                </div>
+                <div class="col-lg-6 order-lg-1">
+                    <div class="image-carousel">
+                        <div class="home-slider major-caousel owl-carousel">
+                            <div class="slider-item">
+                                <img src="~/images/medium-hotel.jpg" alt="Medium Hotel Room" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_3.jpg" alt="Medium Hotel Room Interior" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_1.jpg" alt="Medium Hotel Room View" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
 
-    .btn-primary {
-        background-color: #ffba5a;
-        border-color: #ffba5a;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-        .btn-primary:hover {
-            background-color: #e6a64d;
-            border-color: #e6a64d;
-        }
-
-</style>
-
-<style>
-    .accommodation-category {
-        background: #f8f9fa;
-        padding: 30px;
-        border-radius: 10px;
-        height: 100%;
-    }
-
-        .accommodation-category h3 {
-            color: #333;
-            font-weight: bold;
-        }
-
-    .img-wrap img {
-        height: 150px;
-        object-fit: cover;
-        width: 100%;
-        transition: transform 0.3s ease;
-    }
-
-    .img-wrap:hover img {
-        transform: scale(1.05);
-    }
-
-    .accommodation-name {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 0.9rem;
-    }
-
-    .individual-price {
-        margin-bottom: 0;
-    }
-
-        .individual-price strong {
-            color: #ffba5a;
-            font-size: 1.1rem;
-        }
-
-    .price-range-summary {
-        color: #666;
-        font-style: italic;
-        margin-bottom: 20px;
-    }
-
-    .btn-primary {
-        background-color: #ffba5a;
-        border-color: #ffba5a;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-        .btn-primary:hover {
-            background-color: #e6a64d;
-            border-color: #e6a64d;
-        }
-
-</style>
-
-
-                 
-
-                   
-
-
-<style>
-    .accommodation-category {
-        background: #f8f9fa;
-        padding: 30px;
-        border-radius: 10px;
-        height: 100%;
-    }
-
-        .accommodation-category h3 {
-            color: #333;
-            font-weight: bold;
-        }
-
-    .img-wrap img {
-        height: 150px;
-        object-fit: cover;
-        width: 100%;
-        transition: transform 0.3s ease;
-    }
-
-    .img-wrap:hover img {
-        transform: scale(1.05);
-    }
-
-    .accommodation-name {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 0.9rem;
-    }
-
-    .individual-price {
-        margin-bottom: 0;
-    }
-
-        .individual-price strong {
-            color: #ffba5a;
-            font-size: 1.1rem;
-        }
-
-    .price-range-summary {
-        color: #666;
-        font-style: italic;
-        margin-bottom: 20px;
-    }
-
-    .btn-primary {
-        background-color: #ffba5a;
-        border-color: #ffba5a;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-        .btn-primary:hover {
-            background-color: #e6a64d;
-            border-color: #e6a64d;
-        }
-
-</style>
-        
-
-<!-- END Accommodations section -->
-
-@functions {
-    private string GetImageUrl(string subtype)
-    {
-        if (subtype.Contains("Chalet"))
-        {
-            return subtype.Contains("Small") ? "/images/small-chalet.jpg" :
-                   subtype.Contains("Medium") ? "/images/medium-chalet.jpg" :
-                   subtype.Contains("XL") ? "/images/xl-chalet.jpg" :
-                   "~/images/img_1.jpg";
-        }
-        else if (subtype.Contains("Hotel"))
-        {
-            return subtype.Contains("Small") ? "~/images/small-hotel.jpg" :
-                   subtype.Contains("Medium") ? "~/images/medium-hotel.jpg" :
-                   subtype.Contains("XL") ? "~/images/xl-hotel.jpg" :
-                   "~/images/img_3.jpg";
-        }
-        return "~/images/default-accommodation.jpg";
-    }
+<!-- XL Hotel Room Section -->
+@if (Model.ShowXLHotel)
+{
+    <section class="accommodation-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="accommodation-header">
+                        <h2>XL Hotel Room</h2>
+                        <div class="price-info">€230 / per night</div>
+                        <div class="guest-info">Perfect for up to 6 guests</div>
+                        @if (Model.HasCheckedAvailability)
+                        {
+                            <div class="availability-status text-success">
+                                <i class="fa fa-check"></i> Available for your dates!
+                            </div>
+                        }
+                    </div>
+                    <p class="accommodation-description">
+                        Our XL Hotel Room offers premium accommodation for larger groups. Featuring multiple bedrooms, spacious living area, and luxury amenities. Perfect for families or groups who want hotel convenience with extra space and comfort for memorable stays.
+                    </p>
+                    <a asp-page="/Reservation"
+                       asp-route-accommodationType="Hotel"
+                       asp-route-roomType="XL"
+                       asp-route-checkIn="@Model.Booking.CheckInDate"
+                       asp-route-checkOut="@Model.Booking.CheckOutDate"
+                       asp-route-totalGuests="@Model.Booking.Guests"
+                       class="btn reserve-btn">Reserveer nu!</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="image-carousel">
+                        <div class="home-slider major-caousel owl-carousel">
+                            <div class="slider-item">
+                                <img src="~/images/xl-hotel.jpg" alt="XL Hotel Room" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_1.jpg" alt="XL Hotel Room Interior" class="img-fluid">
+                            </div>
+                            <div class="slider-item">
+                                <img src="~/images/img_2.jpg" alt="XL Hotel Room View" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 }

@@ -1,147 +1,238 @@
-﻿using Core.Domain.Interfaces;
-using Core.Domain.Services;
+﻿using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.ComponentModel.DataAnnotations;
-using Core.Domain.Services;
-using Core.Domain.Interfaces;
+using Core.Domain.Models;
 
 namespace Area42_Accommodation.Pages
 {
     public class ReservationModel : PageModel
     {
-        // ✅ Use services and interfaces instead of concrete repositories
         private readonly BookingService _bookingService;
-        private readonly IAccommodationRepository _accommodationRepository;
+        private readonly PricingService _pricingService;
+        private readonly AccommodationService _accommodationService;
+        private readonly PaymentService _paymentService;
 
-        [BindProperty]
-        public GuestViewModel Guest { get; set; } = new GuestViewModel();
+        public ReservationModel(
+            BookingService bookingService,
+            PricingService pricingService,
+            AccommodationService accommodationService,
+            PaymentService paymentService)
+        {
+            _bookingService = bookingService;
+            _pricingService = pricingService;
+            _accommodationService = accommodationService;
+            _paymentService = paymentService;
+        }
 
+        // Om input van de index over te brengen
         [BindProperty]
         public BookingSummaryViewModel BookingSummary { get; set; } = new BookingSummaryViewModel();
 
-        // ✅ Updated constructor - use services
-        public ReservationModel(
-            BookingService bookingService,
-            IAccommodationRepository accommodationRepository)
-        {
-            _bookingService = bookingService;
-            _accommodationRepository = accommodationRepository;
-        }
+        // Om input in de veldjes op deze pagina te binden
+        [BindProperty]
+        public GuestViewModel Guest { get; set; } = new GuestViewModel();
 
+        // Om payment input te binden
+        [BindProperty]
+        public PaymentViewModel Payment { get; set; } = new PaymentViewModel();
+
+        // Runt op het moment dat re-direct vanuit index gebeurt - vult bookingsummary attributes met URL-parameters
         public void OnGet(string accommodationType = "Hotel", string roomType = "Small",
             string checkIn = "", string checkOut = "", int totalGuests = 1)
         {
-            // Initialize booking summary from query parameters or defaults
-            this.BookingSummary.AccommodationType = accommodationType;
-            this.BookingSummary.RoomType = roomType + " " + accommodationType + (accommodationType == "Hotel" ? " Room" : "");
-            this.BookingSummary.CheckInDate = !string.IsNullOrEmpty(checkIn) ? checkIn : DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
-            this.BookingSummary.CheckOutDate = !string.IsNullOrEmpty(checkOut) ? checkOut : DateTime.Today.AddDays(2).ToString("yyyy-MM-dd");
-            this.BookingSummary.TotalGuests = totalGuests;
+            // Initialize booking summary from query parameters
+            BookingSummary.AccommodationType = accommodationType;
+            BookingSummary.RoomType = roomType + " " + accommodationType + (accommodationType == "Hotel" ? " Room" : "");
+            BookingSummary.CheckInDate = !string.IsNullOrEmpty(checkIn) ? checkIn : DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+            BookingSummary.CheckOutDate = !string.IsNullOrEmpty(checkOut) ? checkOut : DateTime.Today.AddDays(2).ToString("yyyy-MM-dd");
+            BookingSummary.TotalGuests = totalGuests;
 
-            // Calculate pricing using your backend
-            CalculatePricingFromDatabase();
+            // ✅ IMPORTANT: Initialize Payment object
+            Payment = new PaymentViewModel();
+
+            // Delegate pricing calculation to service
+            CalculatePricing();
         }
 
+        // Runt op het moment dat "bevestig boeking" geklikt. Vult SQL-table met nieuwe boeking.
         public IActionResult OnPost()
         {
-            if (!ModelState.IsValid)
+            // Clear validation errors for unused payment fields
+            var fieldsToRemove = new[] {
+        "Payment.PaypalEmail", "Payment.CardName", "Payment.CardNumber",
+        "Payment.CardExpiry", "Payment.CardCvv", "Payment.AccountHolder",
+        "Payment.Iban", "Payment.BankName"
+    };
+
+            foreach (var field in fieldsToRemove)
             {
-                CalculatePricingFromDatabase();
+                if (ModelState.ContainsKey(field))
+                {
+                    ModelState.Remove(field);
+                }
+            }
+
+            // Validate payment method selection
+            if (string.IsNullOrEmpty(Payment?.PaymentMethod))
+            {
+                ModelState.AddModelError("Payment.PaymentMethod", "Selecteer een betaalmethode");
+                CalculatePricing();
                 return Page();
             }
 
+            // Conditional validation based on selected payment method
+            switch (Payment.PaymentMethod.ToLower())
+            {
+                case "paypal":
+                    if (string.IsNullOrEmpty(Payment.PaypalEmail))
+                    {
+                        ModelState.AddModelError("Payment.PaypalEmail", "PayPal email is verplicht");
+                    }
+                    break;
+
+                case "creditcard":
+                    if (string.IsNullOrEmpty(Payment.CardName))
+                        ModelState.AddModelError("Payment.CardName", "Naam op kaart is verplicht");
+                    if (string.IsNullOrEmpty(Payment.CardNumber))
+                        ModelState.AddModelError("Payment.CardNumber", "Kaartnummer is verplicht");
+                    if (string.IsNullOrEmpty(Payment.CardExpiry))
+                        ModelState.AddModelError("Payment.CardExpiry", "Vervaldatum is verplicht");
+                    if (string.IsNullOrEmpty(Payment.CardCvv))
+                        ModelState.AddModelError("Payment.CardCvv", "CVV is verplicht");
+                    break;
+
+                case "banktransfer":
+                    if (string.IsNullOrEmpty(Payment.AccountHolder))
+                        ModelState.AddModelError("Payment.AccountHolder", "Rekeninghouder is verplicht");
+                    if (string.IsNullOrEmpty(Payment.Iban))
+                        ModelState.AddModelError("Payment.Iban", "IBAN is verplicht");
+                    if (string.IsNullOrEmpty(Payment.BankName))
+                        ModelState.AddModelError("Payment.BankName", "Bank naam is verplicht");
+                    break;
+            }
+
+            // Check if form is valid
+            if (!ModelState.IsValid)
+            {
+                CalculatePricing();
+                return Page();
+            }
+
+            // Proceed with booking creation
             try
             {
-                // ✅ Get selected accommodation ID
-                int accommodationId = GetSelectedAccommodationId();
+                int accommodationId = _accommodationService.GetAccommodationIdByRoomType(BookingSummary.RoomType);
 
-                // ✅ Simple service call - handles all the complexity!
                 int bookingId = _bookingService.CreateBooking(
                     firstName: Guest.FirstName,
                     lastName: Guest.LastName,
                     dateOfBirth: Guest.DateOfBirth,
                     email: Guest.Email,
                     accommodationId: accommodationId,
-                    startDate: DateTime.Parse(this.BookingSummary.CheckInDate),
-                    endDate: DateTime.Parse(this.BookingSummary.CheckOutDate),
-                    numberOfGuests: this.BookingSummary.TotalGuests
+                    startDate: DateTime.Parse(BookingSummary.CheckInDate),
+                    endDate: DateTime.Parse(BookingSummary.CheckOutDate),
+                    numberOfGuests: BookingSummary.TotalGuests
                 );
 
-                TempData["SuccessMessage"] = $"Boeking bevestigd voor {Guest.FirstName} {Guest.LastName}! Booking ID: {bookingId}. Totaal: €{this.BookingSummary.TotalAmount:F2} voor {this.BookingSummary.TotalGuests} personen.";
+                var paymentDetails = CreatePaymentDetailsDictionary();
+                string paymentResult = _paymentService.ProcessBookingPayment(
+                    bookingId: bookingId,
+                    amount: BookingSummary.TotalAmount,
+                    paymentMethod: Payment.PaymentMethod,
+                    paymentDetails: paymentDetails
+                );
+
+                if (paymentResult.Contains("Error", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError("Payment", $"Betaling mislukt: {paymentResult}");
+                    CalculatePricing();
+                    return Page();
+                }
+
+                string paymentMethodDisplay = GetPaymentMethodDisplayName();
+                TempData["SuccessMessage"] = $"Boeking bevestigd voor {Guest.FirstName} {Guest.LastName}! Booking ID: {bookingId}. Betaalmethode: {paymentMethodDisplay}. Totaal: €{BookingSummary.TotalAmount:F2} voor {BookingSummary.TotalGuests} personen.";
+                TempData["PaymentDetails"] = paymentResult;
 
                 return RedirectToPage("/BookingConfirmation");
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Er is een fout opgetreden: {ex.Message}");
-                CalculatePricingFromDatabase();
+                CalculatePricing();
                 return Page();
             }
         }
-
-        private void CalculatePricingFromDatabase()
+        // Simplified method that delegates all pricing logic to the service
+        private void CalculatePricing()
         {
-            try
+            if (DateTime.TryParse(BookingSummary.CheckInDate, out DateTime checkIn) &&
+                DateTime.TryParse(BookingSummary.CheckOutDate, out DateTime checkOut))
             {
-                // Get accommodation details from database
-                var accommodations = _accommodationRepository.GetAccommodations();
-                var selectedAccommodation = accommodations.FirstOrDefault(a =>
-                    this.BookingSummary.RoomType.Contains(a._subtype, StringComparison.OrdinalIgnoreCase));
-
-                if (selectedAccommodation != null)
-                {
-                    this.BookingSummary.PricePerNight = selectedAccommodation._pricePerNight;
-                }
-                else
-                {
-                    // Fallback to hardcoded pricing if not found
-                    this.BookingSummary.PricePerNight = 100.00m;
-                }
-
-                // Calculate number of nights
-                if (DateTime.TryParse(this.BookingSummary.CheckInDate, out DateTime checkIn) &&
-                    DateTime.TryParse(this.BookingSummary.CheckOutDate, out DateTime checkOut))
-                {
-                    this.BookingSummary.NumberOfNights = (checkOut - checkIn).Days;
-                    if (this.BookingSummary.NumberOfNights <= 0)
-                        this.BookingSummary.NumberOfNights = 1;
-                }
-                else
-                {
-                    this.BookingSummary.NumberOfNights = 1;
-                }
-
-                // Calculate total amount
-                this.BookingSummary.TotalAmount = this.BookingSummary.PricePerNight * this.BookingSummary.NumberOfNights;
+                // Use pricing service for all calculations
+                BookingSummary.PricePerNight = _pricingService.GetPricePerNight(BookingSummary.RoomType);
+                BookingSummary.NumberOfNights = _pricingService.CalculateNumberOfNights(checkIn, checkOut);
+                BookingSummary.TotalAmount = _pricingService.CalculateTotalPrice(BookingSummary.RoomType, checkIn, checkOut);
             }
-            catch (Exception)
+            else
             {
-                // Fallback to default pricing if database fails
-                this.BookingSummary.PricePerNight = 100.00m;
-                this.BookingSummary.NumberOfNights = 1;
-                this.BookingSummary.TotalAmount = 100.00m;
+                // Handle invalid dates with fallback values
+                BookingSummary.PricePerNight = 100.00m;
+                BookingSummary.NumberOfNights = 1;
+                BookingSummary.TotalAmount = 100.00m;
             }
         }
 
-        // ✅ Simplified - just return the accommodation ID
-        private int GetSelectedAccommodationId()
+        // Create payment details dictionary for Strategy Pattern
+        private Dictionary<string, string> CreatePaymentDetailsDictionary()
         {
-            var accommodations = _accommodationRepository.GetAccommodations();
-            var selectedAccommodation = accommodations.FirstOrDefault(a =>
-                this.BookingSummary.RoomType.Contains(a._subtype, StringComparison.OrdinalIgnoreCase));
+            var paymentDetails = new Dictionary<string, string>();
 
-            if (selectedAccommodation != null)
+            switch (Payment.PaymentMethod?.ToLower())
             {
-                return selectedAccommodation._accommodationID;
+                case "paypal":
+                    paymentDetails["email"] = Payment.PaypalEmail ?? string.Empty;
+                    break;
+
+                case "creditcard":
+                    paymentDetails["cardName"] = Payment.CardName ?? string.Empty;
+                    paymentDetails["cardNumber"] = Payment.CardNumber ?? string.Empty;
+                    paymentDetails["expiry"] = Payment.CardExpiry ?? string.Empty;
+                    paymentDetails["cvv"] = Payment.CardCvv ?? string.Empty;
+                    break;
+
+                case "banktransfer":
+                    paymentDetails["accountHolder"] = Payment.AccountHolder ?? string.Empty;
+                    paymentDetails["iban"] = Payment.Iban ?? string.Empty;
+                    paymentDetails["bankName"] = Payment.BankName ?? string.Empty;
+                    break;
             }
 
-            // Fallback - return first accommodation if none found
-            return accommodations.First()._accommodationID;
+            return paymentDetails;
+        }
+
+        // Get display name for payment method
+        private string GetPaymentMethodDisplayName()
+        {
+            return Payment.PaymentMethod?.ToLower() switch
+            {
+                "paypal" => "PayPal",
+                "creditcard" => "Credit Card",
+                "banktransfer" => "Bank Transfer (EU)",
+                _ => Payment.PaymentMethod
+            };
+        }
+
+        // Helper method for clearing model state errors
+        private void ClearModelStateErrors(params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (ModelState.ContainsKey(key))
+                {
+                    ModelState[key].Errors.Clear();
+                }
+            }
         }
     }
 
@@ -176,5 +267,39 @@ namespace Area42_Accommodation.Pages
         public decimal PricePerNight { get; set; }
         public int NumberOfNights { get; set; }
         public decimal TotalAmount { get; set; }
+    }
+
+    // ✅ CRITICAL: PaymentViewModel with NO [Required] attributes on individual fields
+    public class PaymentViewModel
+    {
+        [Required(ErrorMessage = "Selecteer een betaalmethode")]
+        public string PaymentMethod { get; set; } = string.Empty;
+
+        // PayPal fields - NO [Required] attribute!
+        [StringLength(100, ErrorMessage = "PayPal email mag maximaal 100 karakters bevatten")]
+        public string PaypalEmail { get; set; } = string.Empty;
+
+        // Credit Card fields - NO [Required] attributes!
+        [StringLength(50, ErrorMessage = "Naam op kaart mag maximaal 50 karakters bevatten")]
+        public string CardName { get; set; } = string.Empty;
+
+        [StringLength(20, ErrorMessage = "Kaartnummer mag maximaal 20 karakters bevatten")]
+        public string CardNumber { get; set; } = string.Empty;
+
+        [StringLength(5, ErrorMessage = "Vervaldatum mag maximaal 5 karakters bevatten")]
+        public string CardExpiry { get; set; } = string.Empty;
+
+        [StringLength(4, ErrorMessage = "CVV mag maximaal 4 karakters bevatten")]
+        public string CardCvv { get; set; } = string.Empty;
+
+        // Bank Transfer fields - NO [Required] attributes!
+        [StringLength(100, ErrorMessage = "Rekeninghouder mag maximaal 100 karakters bevatten")]
+        public string AccountHolder { get; set; } = string.Empty;
+
+        [StringLength(50, ErrorMessage = "IBAN mag maximaal 50 karakters bevatten")]
+        public string Iban { get; set; } = string.Empty;
+
+        [StringLength(50, ErrorMessage = "Bank naam mag maximaal 50 karakters bevatten")]
+        public string BankName { get; set; } = string.Empty;
     }
 }

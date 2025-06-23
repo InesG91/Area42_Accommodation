@@ -1,7 +1,14 @@
-﻿@page
+﻿@page "/Reservation"
 @model Area42_Accommodation.Pages.ReservationModel
 @{
     ViewData["Title"] = "Reservation";
+}
+
+@if (TempData["DebugInfo"] != null)
+{
+    <div style="background: lightblue; padding: 10px; margin: 10px; border: 2px solid blue;">
+        <strong>DEBUG INFO:</strong> @TempData["DebugInfo"]
+    </div>
 }
 
 @section Styles {
@@ -98,6 +105,108 @@
             background-color: #f8d7da;
             border-color: #f5c6cb;
             color: #721c24;
+        }
+
+        /* Payment Section Styles */
+        .payment-option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+            .payment-option:hover {
+                border-color: #ffba5a;
+                background-color: #fef9f3;
+            }
+
+            .payment-option.selected {
+                border-color: #ffba5a;
+                background-color: #fef9f3;
+                box-shadow: 0 2px 8px rgba(255, 186, 90, 0.2);
+            }
+
+            .payment-option input[type="radio"] {
+                margin-right: 15px;
+                transform: scale(1.2);
+                accent-color: #ffba5a;
+            }
+
+        .payment-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .payment-label {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: #333;
+            flex-grow: 1;
+        }
+
+        .payment-form {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+            .payment-form.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+                max-height: 500px;
+            }
+
+        .payment-form-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffba5a;
+        }
+
+        .card-row {
+            display: flex;
+            gap: 15px;
+        }
+
+            .card-row .form-group {
+                flex: 1;
+            }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group label {
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 8px;
+                display: block;
+            }
+
+        .security-note {
+            background: #e8f4fd;
+            border-left: 4px solid #007bff;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #004085;
         }
     </style>
 }
@@ -217,6 +326,97 @@
                             </div>
                         </div>
 
+                        <!-- CLEAN PAYMENT METHOD SELECTION - NO CLIENT VALIDATION -->
+                        <div class="form-section">
+                            <h3 class="section-title">Betaalmethode</h3>
+
+                            <!-- Simple Dropdown Selection -->
+                            <div style="margin-bottom: 30px;">
+                                <label for="payment-method" style="font-weight: 600; margin-bottom: 10px; display: block;">Selecteer betaalmethode *</label>
+                                <select class="form-control" id="payment-method" asp-for="Payment.PaymentMethod" style="padding: 12px; font-size: 1.1rem;">
+                                    <option value="">-- Kies een betaalmethode --</option>
+                                    <option value="paypal">💳 PayPal</option>
+                                    <option value="creditcard">💳 Credit Card</option>
+                                    <option value="banktransfer">🏦 Bank Transfer (EU)</option>
+                                </select>
+                                <!-- NO asp-validation-for here to prevent client validation -->
+                            </div>
+
+                            <!-- PayPal Details -->
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                                <h5 style="margin-bottom: 15px; color: #333;">💳 PayPal Details</h5>
+                                <div class="form-group">
+                                    <label for="paypal-email" style="font-weight: 600; margin-bottom: 5px; display: block;">PayPal Email</label>
+                                    <input type="email" class="form-control" id="paypal-email" asp-for="Payment.PaypalEmail" placeholder="your@email.com">
+                                    <!-- NO asp-validation-for to prevent client validation -->
+                                </div>
+                                <div style="background: #e8f4fd; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.85rem; color: #004085;">
+                                    <strong>Secure:</strong> You'll be redirected to PayPal to complete your payment safely.
+                                </div>
+                            </div>
+
+                            <!-- Credit Card Details -->
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                                <h5 style="margin-bottom: 15px; color: #333;">💳 Credit Card Details</h5>
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label for="card-name" style="font-weight: 600; margin-bottom: 5px; display: block;">Name on Card</label>
+                                        <input type="text" class="form-control" id="card-name" asp-for="Payment.CardName" placeholder="John Doe">
+                                        <!-- NO asp-validation-for -->
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label for="card-number" style="font-weight: 600; margin-bottom: 5px; display: block;">Card Number</label>
+                                        <input type="text" class="form-control" id="card-number" asp-for="Payment.CardNumber" placeholder="1234 5678 9012 3456">
+                                        <!-- NO asp-validation-for -->
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label for="card-expiry" style="font-weight: 600; margin-bottom: 5px; display: block;">Expiry Date</label>
+                                        <input type="text" class="form-control" id="card-expiry" asp-for="Payment.CardExpiry" placeholder="MM/YY">
+                                        <!-- NO asp-validation-for -->
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label for="card-cvv" style="font-weight: 600; margin-bottom: 5px; display: block;">CVV</label>
+                                        <input type="text" class="form-control" id="card-cvv" asp-for="Payment.CardCvv" placeholder="123">
+                                        <!-- NO asp-validation-for -->
+                                    </div>
+                                </div>
+                                <div style="background: #e8f4fd; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.85rem; color: #004085;">
+                                    <strong>Secure:</strong> Your data is encrypted and processed according to PCI DSS standards.
+                                </div>
+                            </div>
+
+                            <!-- Bank Transfer Details -->
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                                <h5 style="margin-bottom: 15px; color: #333;">🏦 Bank Transfer Details</h5>
+                                <div class="form-group mb-3">
+                                    <label for="account-holder" style="font-weight: 600; margin-bottom: 5px; display: block;">Account Holder</label>
+                                    <input type="text" class="form-control" id="account-holder" asp-for="Payment.AccountHolder" placeholder="John Doe">
+                                    <!-- NO asp-validation-for -->
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="iban" style="font-weight: 600; margin-bottom: 5px; display: block;">IBAN</label>
+                                    <input type="text" class="form-control" id="iban" asp-for="Payment.Iban" placeholder="NL00 BANK 0000 0000 00">
+                                    <!-- NO asp-validation-for -->
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="bank-name" style="font-weight: 600; margin-bottom: 5px; display: block;">Bank Name</label>
+                                    <input type="text" class="form-control" id="bank-name" asp-for="Payment.BankName" placeholder="ING Bank">
+                                    <!-- NO asp-validation-for -->
+                                </div>
+                                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.85rem; color: #856404;">
+                                    <strong>Note:</strong> You'll receive confirmation with bank transfer details. Payment required within 3 business days.
+                                </div>
+                            </div>
+
+                            <!-- General Instructions -->
+                            <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                                <p style="margin: 0; color: #004085; font-size: 0.9rem;">
+                                    <strong>Instructions:</strong> Select a payment method from the dropdown above and fill in the relevant details.
+                                    Only the fields for your selected payment method are required.
+                                </p>
+                            </div>
+                        </div>
+
                         <!-- Hidden fields for booking data -->
                         <input type="hidden" asp-for="BookingSummary.AccommodationType" />
                         <input type="hidden" asp-for="BookingSummary.RoomType" />
@@ -227,10 +427,13 @@
                         <input type="hidden" asp-for="BookingSummary.TotalAmount" />
                         <input type="hidden" asp-for="BookingSummary.TotalGuests" />
 
-                        <!-- Submit Button -->
+                        <!-- Simple Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn confirm-btn">Bevestig Boeking</button>
+                            <button type="submit" class="btn confirm-btn" style="background: #ffba5a; border: none; padding: 15px 50px; font-size: 1.2rem; font-weight: bold; border-radius: 50px; color: white; text-transform: uppercase;">
+                                Bevestig Boeking
+                            </button>
                         </div>
+
                     </form>
                 </div>
             </div>
@@ -240,7 +443,43 @@
 
 @section Scripts {
     <script>
-        // No dynamic form interactions needed - this is just a summary page
-        console.log('Reservation summary page loaded');
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Card number formatting - adds spaces every 4 digits
+            const cardNumber = document.getElementById('card-number');
+            if (cardNumber) {
+                cardNumber.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    let formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    e.target.value = formatted.substring(0, 19);
+                });
+            }
+
+            // Card expiry formatting - MM/YY format
+            const cardExpiry = document.getElementById('card-expiry');
+            if (cardExpiry) {
+                cardExpiry.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length >= 2) {
+                        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            // CVV formatting - numbers only, max 4 digits
+            const cardCvv = document.getElementById('card-cvv');
+            if (cardCvv) {
+                cardCvv.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+                });
+            }
+
+        });
     </script>
+
+    <!-- Uncomment this line if you want client-side validation back -->
+    <!-- @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    } -->
 }
