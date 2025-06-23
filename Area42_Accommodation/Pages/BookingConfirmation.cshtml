@@ -3,6 +3,13 @@
 @{
     ViewData["Title"] = "Booking Confirmation";
 }
+
+@if (TempData["DebugInfo"] != null)
+{
+    <div style="background: lightblue; padding: 10px; margin: 10px; border: 2px solid blue;">
+        <strong>DEBUG INFO:</strong> @TempData["DebugInfo"]
+    </div>
+}
 <section class="section">
     <div class="container">
         <div class="row justify-content-center">
