@@ -12,5 +12,7 @@ namespace Core.Domain.Interfaces
         List<Accommodation> GetAccommodations();
         Accommodation? GetById(int id);
         List<Accommodation> GetByType(string type);
+
+        bool IsAvailable(int accommodationId, DateTime startDate, DateTime endDate);
     }
 }

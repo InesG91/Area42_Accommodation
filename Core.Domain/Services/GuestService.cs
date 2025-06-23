@@ -1,10 +1,6 @@
 ﻿using Core.Domain.Interfaces;
 using Core.Domain.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Domain.Services
 {
@@ -17,39 +13,47 @@ namespace Core.Domain.Services
             _guestRepository = guestRepository;
         }
 
-        /// <summary>
-        /// Stores a new guest in the database and returns the generated GuestID
-        /// </summary>
+        public int GetOrCreateGuest(string firstName, string lastName, DateTime dateOfBirth, string email)
+        {
+            // First, check if guest already exists by email
+            var existingGuest = GetGuestByEmail(email);
+
+            if (existingGuest != null)
+            {
+                // Guest exists, return their ID
+                return existingGuest.GuestID;
+            }
+
+            // Guest doesn't exist, create a new one
+            // Note: We pass 0 as placeholder ID - SQL Server IDENTITY will generate the real ID
+            var newGuest = new Guest(0, firstName, lastName, dateOfBirth, email);
+
+            // Save to database and return the generated ID
+            return StoreGuest(newGuest);
+        }
+
+       
         public int StoreGuest(Guest guest)
         {
             return _guestRepository.Save(guest);
         }
 
-        /// <summary>
-        /// Retrieves a guest by their ID
-        /// </summary>
+       
         public Guest? GetGuestById(int guestId)
         {
             return _guestRepository.GetById(guestId);
         }
 
-        /// <summary>
-        /// Retrieves a guest by their email address
-        /// </summary>
+       
         public Guest? GetGuestByEmail(string email)
         {
             return _guestRepository.GetByEmail(email);
         }
 
-        /// <summary>
-        /// Checks if a guest already exists with the given email
-        /// </summary>
+     
         public bool GuestExistsByEmail(string email)
         {
             return _guestRepository.GetByEmail(email) != null;
         }
-        
-        
-        
     }
 }

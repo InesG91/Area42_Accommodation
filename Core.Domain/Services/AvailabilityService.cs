@@ -3,8 +3,6 @@ using Core.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Domain.Services
 {
@@ -19,25 +17,46 @@ namespace Core.Domain.Services
             _accommodationRepository = accommodationRepository;
         }
 
-        // Main method: Get available accommodations for date range
-        public List<Accommodation> GetAvailableAccommodations(DateTime startDate, DateTime endDate, int guestCount = 1)
+       
+        public List<Accommodation> GetAvailableAccommodations(DateTime startDate, DateTime endDate, int guestCount)
         {
-            // 1. Get accommodation IDs that are available for all days in range
+            // Get list of accommodation IDs that are available for the date range
             var availableIds = _availabilityRepository.GetAvailableAccommodations(startDate, endDate);
 
-            // 2. Get full accommodation details (returns domain models)
+            // Get all accommodations as domain objects
             var allAccommodations = _accommodationRepository.GetAccommodations();
 
-            // 3. Filter by availability and guest capacity
+            // Filter accommodations by availability AND guest capacity
             var availableAccommodations = allAccommodations
-                .Where(a => availableIds.Contains(a._accommodationID)) // ✅ Use underscore property
-                .Where(a => a._maxGuests >= guestCount) // ✅ Use underscore property
+                .Where(a => availableIds.Contains(a._accommodationID))  // Available on these dates
+                .Where(a => a._maxGuests >= guestCount)                 // Can fit the guests
                 .ToList();
 
-            return availableAccommodations; // ✅ Return domain models, not DTOs
+            return availableAccommodations;
         }
 
-        // Reserve dates when booking is created
+        
+        public bool IsAvailable(int accommodationId, DateTime startDate, DateTime endDate)
+        {
+            // Delegate to repository for the actual availability check
+            // This could also use _availabilityRepository if you have that method there
+            return _accommodationRepository.IsAvailable(accommodationId, startDate, endDate);
+        }
+
+        
+        public void ValidateAndReserve(int accommodationId, DateTime startDate, DateTime endDate)
+        {
+            // Check if accommodation is available for the requested dates
+            if (!IsAvailable(accommodationId, startDate, endDate))
+            {
+                throw new InvalidOperationException("Selected accommodation is not available for the chosen dates.");
+            }
+
+            // If available, reserve it
+            ReserveAccommodation(accommodationId, startDate, endDate);
+        }
+
+      
         public void ReserveAccommodation(int accommodationId, DateTime startDate, DateTime endDate)
         {
             _availabilityRepository.MarkUnavailable(accommodationId, startDate, endDate);
