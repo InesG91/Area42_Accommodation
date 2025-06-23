@@ -8,21 +8,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// Register your interfaces with concrete implementations (proper DDD)
+
+
 builder.Services.AddScoped<IAccommodationRepository, AccommodationRepository>();
 builder.Services.AddScoped<IGuestRepository, GuestRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
-
-// Register your repositories and services
-builder.Services.AddScoped<BookingRepository>();
-builder.Services.AddScoped<GuestRepository>();
-builder.Services.AddScoped<AccommodationRepository>();
-builder.Services.AddScoped<AvailabilityRepository>();
+// Concrete services 
+builder.Services.AddScoped<PaymentService>();           
+builder.Services.AddScoped<PricingService>();           
+builder.Services.AddScoped<BookingService>();           
+builder.Services.AddScoped<GuestService>();             
+builder.Services.AddScoped<AccommodationService>();
 builder.Services.AddScoped<AvailabilityService>();
-builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>(); // ✅ Added interface registration
-
 
 var app = builder.Build();
 
