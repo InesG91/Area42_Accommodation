@@ -1,4 +1,6 @@
-﻿using Core.Domain.Interfaces;
+﻿using System.Security.Cryptography;
+using System.Text;
+using Core.Domain.Interfaces;
 using Core.Domain.Models;
 using System;
 
@@ -13,26 +15,24 @@ namespace Core.Domain.Services
             _guestRepository = guestRepository;
         }
 
-        public int GetOrCreateGuest(string firstName, string lastName, DateTime dateOfBirth, string email)
+        public (int GuestId, string? GeneratedPassword) GetOrCreateGuest(string firstName, string lastName, DateTime dateOfBirth, string email)
         {
-            // First, check if guest already exists by email
             var existingGuest = GetGuestByEmail(email);
-
             if (existingGuest != null)
             {
-                // Guest exists, return their ID
-                return existingGuest.GuestID;
+                return (existingGuest.GuestID, null);
             }
 
-            // Guest doesn't exist, create a new one
-            // Note: We pass 0 as placeholder ID - SQL Server IDENTITY will generate the real ID
-            var newGuest = new Guest(0, firstName, lastName, dateOfBirth, email);
+            string plainPassword = _guestRepository.GenerateIncrementalPassword();
+            string hashedPassword = HashPassword(plainPassword);
 
-            // Save to database and return the generated ID
-            return StoreGuest(newGuest);
+            var newGuest = new Guest(0, firstName, lastName, dateOfBirth, email, hashedPassword);
+            int newGuestId = StoreGuest(newGuest);
+
+            return (newGuestId, plainPassword);
         }
 
-       
+
         public int StoreGuest(Guest guest)
         {
             return _guestRepository.Save(guest);
@@ -54,6 +54,13 @@ namespace Core.Domain.Services
         public bool GuestExistsByEmail(string email)
         {
             return _guestRepository.GetByEmail(email) != null;
+        }
+
+        private string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(bytes);
         }
     }
 }

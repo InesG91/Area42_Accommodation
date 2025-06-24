@@ -15,7 +15,9 @@ namespace Core.Domain.Models
         public DateTime DateOfBirth { get; private set; }
         public string Email { get; private set; }
 
-        public Guest(int guestID, string firstName, string lastName, DateTime dateOfBirth, string email)
+        public string PasswordHash { get; private set; } // ✅ ADD THIS LINE
+
+        public Guest(int guestID, string firstName, string lastName, DateTime dateOfBirth, string email, string passwordHash = "")
         {
             if (AgeHelper.CalculateAge(dateOfBirth) < 18)
                 throw new InvalidOperationException("Guest must be at least 18 years old to book.");
@@ -31,6 +33,7 @@ namespace Core.Domain.Models
             LastName = lastName;
             DateOfBirth = dateOfBirth;
             Email = email;
+            PasswordHash = passwordHash;
 
         }
     }

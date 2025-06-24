@@ -1,0 +1,311 @@
+﻿@page "/Account"
+@model Area42_Accommodation.Pages.AccountModel
+@{
+    ViewData["Title"] = "My Account";
+}
+
+@section Styles {
+    <style>
+        .account-form {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .form-section:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .booking-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .total-price {
+            font-size: 2rem;
+            color: #ffba5a;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .update-btn {
+            background: #ffba5a;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+            .update-btn:hover {
+                background: #e6a64d;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 186, 90, 0.4);
+            }
+
+        .logout-btn {
+            background: #dc3545;
+            border: none;
+            padding: 10px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            float: right;
+            margin-bottom: 20px;
+        }
+
+            .logout-btn:hover {
+                background: #c82333;
+                transform: translateY(-2px);
+            }
+
+        .form-control:focus {
+            border-color: #ffba5a;
+            box-shadow: 0 0 0 0.2rem rgba(255, 186, 90, 0.25);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+            .summary-item strong {
+                color: #000;
+            }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .booking-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .no-bookings {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="site-hero inner-page overlay" style="background-image: url(/images/hero_image.jpg)" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="row site-hero-inner justify-content-center align-items-center">
+            <div class="col-md-10 text-center" data-aos="fade">
+                <h1 class="heading mb-3">Mijn Account</h1>
+                <ul class="custom-breadcrumbs mb-4">
+                    <li><a asp-page="/Index">Home</a></li>
+                    <li>&bullet;</li>
+                    <li>Mijn Account</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Account Section -->
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Logout Button -->
+                <div class="text-right">
+                    <a href="/Logout" class="btn logout-btn">Uitloggen</a>
+                </div>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success" role="alert">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="account-form">
+                    <form method="post">
+
+                        <!-- Personal Information -->
+                        <div class="form-section">
+                            <h3 class="section-title">Persoonlijke Gegevens</h3>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label font-weight-bold">Voornaam *</label>
+                                    <input type="text" class="form-control" id="firstName" asp-for="UserProfile.FirstName" required>
+                                    <span asp-validation-for="UserProfile.FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label font-weight-bold">Achternaam *</label>
+                                    <input type="text" class="form-control" id="lastName" asp-for="UserProfile.LastName" required>
+                                    <span asp-validation-for="UserProfile.LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="dateOfBirth" class="form-label font-weight-bold">Geboortedatum *</label>
+                                    <input type="date" class="form-control" id="dateOfBirth" asp-for="UserProfile.DateOfBirth" required>
+                                    <span asp-validation-for="UserProfile.DateOfBirth" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label font-weight-bold">Email *</label>
+                                    <input type="email" class="form-control" id="email" asp-for="UserProfile.Email" required>
+                                    <span asp-validation-for="UserProfile.Email" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn update-btn">
+                                    Gegevens Bijwerken
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                    <!-- Booking History -->
+                    <div class="form-section">
+                        <h3 class="section-title">Mijn Boekingen</h3>
+
+                        @if (Model.BookingHistory.Any())
+                        {
+                            @foreach (var booking in Model.BookingHistory)
+                            {
+                                <div class="booking-summary">
+                                    <div class="summary-item">
+                                        <span>Boeking #:</span>
+                                        <strong>@booking.BookingID</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Accommodatie:</span>
+                                        <strong>@booking.AccommodationType</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Check-in:</span>
+                                        <strong>@booking.CheckInDate.ToString("dd/MM/yyyy")</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Check-out:</span>
+                                        <strong>@booking.CheckOutDate.ToString("dd/MM/yyyy")</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Aantal nachten:</span>
+                                        <strong>@booking.NumberOfNights</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Gasten:</span>
+                                        <strong>@booking.TotalGuests personen</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Prijs per nacht:</span>
+                                        <strong>€@booking.PricePerNight.ToString("F2")</strong>
+                                    </div>
+
+                                    <div class="total-price">
+                                        Totaal: €@booking.TotalAmount.ToString("F2")
+                                    </div>
+
+                                    <div class="text-center">
+                                        <span class="booking-status @(booking.BookingStatus.ToLower() == "confirmed" ? "status-confirmed" :
+                                                                    booking.BookingStatus.ToLower() == "pending" ? "status-pending" : "status-cancelled")">
+                                            Status: @booking.BookingStatus
+                                        </span>
+                                        <span class="booking-status @(booking.PaymentStatus.ToLower() == "paid" ? "status-confirmed" :
+                                                                    booking.PaymentStatus.ToLower() == "pending" ? "status-pending" : "status-cancelled")"
+                                              style="margin-left: 10px;">
+                                            Betaling: @booking.PaymentStatus
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="no-bookings">
+                                <p>Je hebt nog geen boekingen gemaakt.</p>
+                                <a asp-page="/Index" class="btn" style="background: #ffba5a; color: white; padding: 10px 30px; border-radius: 25px; text-decoration: none; margin-top: 15px;">
+                                    Maak je eerste boeking
+                                </a>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

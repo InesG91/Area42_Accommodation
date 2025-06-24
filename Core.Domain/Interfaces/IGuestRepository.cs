@@ -12,7 +12,9 @@ namespace Core.Domain.Interfaces
         int Save(Guest Guest);
         Guest? GetById(int guestId);
         Guest? GetByEmail(string email);
-       
+
+        string GenerateIncrementalPassword();
+
         //void Delete(int guestId);
     }
 }

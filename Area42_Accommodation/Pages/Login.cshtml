@@ -1,0 +1,156 @@
+﻿@page "/Login"
+@model Area42_Accommodation.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+@section Styles {
+    <style>
+        .login-form {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 40px 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #000;
+            margin-bottom: 30px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .login-btn {
+            background: #ffba5a;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+            .login-btn:hover {
+                background: #e6a64d;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 186, 90, 0.4);
+            }
+
+        .form-control:focus {
+            border-color: #ffba5a;
+            box-shadow: 0 0 0 0.2rem rgba(255, 186, 90, 0.25);
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+            .register-link a {
+                color: #ffba5a;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+                .register-link a:hover {
+                    color: #e6a64d;
+                    text-decoration: underline;
+                }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="site-hero inner-page overlay" style="background-image: url(/images/hero_image.jpg)" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="row site-hero-inner justify-content-center align-items-center">
+            <div class="col-md-10 text-center" data-aos="fade">
+                <h1 class="heading mb-3">Inloggen</h1>
+                <ul class="custom-breadcrumbs mb-4">
+                    <li><a asp-page="/Index">Home</a></li>
+                    <li>&bullet;</li>
+                    <li>Inloggen</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Login Form Section -->
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success" role="alert">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="login-form">
+                    <form method="post">
+                        <div class="form-section">
+                            <h3 class="section-title">Welkom Terug</h3>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label font-weight-bold">Email *</label>
+                                <input type="email" class="form-control" id="email" asp-for="Input.Email" required style="padding: 12px; font-size: 1.1rem;">
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label font-weight-bold">Wachtwoord *</label>
+                                <input type="password" class="form-control" id="password" asp-for="Input.Password" required style="padding: 12px; font-size: 1.1rem;">
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn login-btn">
+                                    Inloggen
+                                </button>
+                            </div>
+
+                            <div class="register-link">
+                                <p>Nog geen account? <a asp-page="/Register">Registreer hier</a></p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

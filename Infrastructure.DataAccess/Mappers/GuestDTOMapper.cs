@@ -13,7 +13,8 @@ namespace Infrastructure.DataAccess.Mappers
                 dto.FirstName,
                 dto.LastName,
                 dto.DateOfBirth,
-                dto.Email
+                dto.Email,
+                dto.PasswordHash
             );
         }
 
@@ -26,7 +27,8 @@ namespace Infrastructure.DataAccess.Mappers
                 FirstName = guest.FirstName,
                 LastName = guest.LastName,
                 DateOfBirth = guest.DateOfBirth,
-                Email = guest.Email
+                Email = guest.Email,
+                PasswordHash = guest.PasswordHash
             };
         }
 
